@@ -1,18 +1,34 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:hostel_management/presentaion/screens/student/student_screen.dart';
+import 'package:hostel_management/presentation/screens/dorm/dorm_screen.dart';
+import 'package:hostel_management/presentation/screens/dorm_finance/dorm_finance_screen.dart';
+import 'package:hostel_management/presentation/screens/student/student_screen.dart';
+import 'package:hostel_management/presentation/screens/violation/violation_screen.dart';
 import 'package:sidebarx/sidebarx.dart';
 
 import 'config/theme.dart';
 
 void main() {
-  runApp(SidebarXExampleApp());
+  runApp(const MyApp());
 }
 
-class SidebarXExampleApp extends StatelessWidget {
-  SidebarXExampleApp({Key? key}) : super(key: key);
+class MyApp extends StatefulWidget {
+  const MyApp({Key? key}) : super(key: key);
+
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  final widgets = [
+    const StudentScreen(),
+    const DormScreen(),
+    const DormFinanceScreen(),
+    const ViolationScreen()
+  ];
 
   final _controller = SidebarXController(selectedIndex: 0);
+  int _selectedIndex = 0;
 
   @override
   Widget build(BuildContext context) {
@@ -24,11 +40,12 @@ class SidebarXExampleApp extends StatelessWidget {
         GlobalWidgetsLocalizations.delegate,
       ],
       supportedLocales: const [
-        Locale("fa", "IR"), // OR Locale('ar', 'AE') OR Other RTL locales
+        Locale("fa", "IR"),
       ],
       locale: const Locale("fa", "IR"),
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
+          colorScheme: colorScheme,
           primaryColor: primaryColor,
           canvasColor: canvasColor,
           cardColor: canvasColor,
@@ -87,86 +104,50 @@ class SidebarXExampleApp extends StatelessWidget {
                   ),
                 );
               },
-              items: const [
+              items: [
                 SidebarXItem(
-                  icon: Icons.home,
-                  label: 'خانه',
-                ),
+                    icon: Icons.home,
+                    label: 'خانه',
+                    onTap: () {
+                      setState(() {
+                        _selectedIndex = 0;
+                      });
+                    }),
                 SidebarXItem(
-                  icon: Icons.search,
-                  label: 'جستجو',
-                ),
+                    icon: Icons.search,
+                    label: 'جستجو',
+                    onTap: () {
+                      setState(() {
+                        _selectedIndex = 1;
+                      });
+                    }),
                 SidebarXItem(
-                  icon: Icons.people,
-                  label: 'مردم',
-                ),
+                    icon: Icons.people,
+                    label: 'مردم',
+                    onTap: () {
+                      setState(() {
+                        _selectedIndex = 2;
+                      });
+                    }),
                 SidebarXItem(
-                  icon: Icons.favorite,
-                  label: 'موردعلاقه',
-                ),
+                    icon: Icons.favorite,
+                    label: 'موردعلاقه',
+                    onTap: () {
+                      setState(() {
+                        _selectedIndex = 3;
+                      });
+                    }),
               ],
             ),
             Expanded(
-              child: Center(
-                child: _ScreensExample(controller: _controller),
+              child: IndexedStack(
+                index: _selectedIndex,
+                children: widgets,
               ),
             ),
           ],
         ),
       ),
-    );
-  }
-}
-
-class _ScreensExample extends StatelessWidget {
-  const _ScreensExample({
-    Key? key,
-    required this.controller,
-  }) : super(key: key);
-
-  final SidebarXController controller;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return AnimatedBuilder(
-      animation: controller,
-      builder: (context, child) {
-        switch (controller.selectedIndex) {
-          case 0:
-            return const DataPage();
-          case 1:
-            return Text(
-              'جستجو',
-              style: theme.textTheme.headlineSmall,
-            );
-          case 2:
-            return Text(
-              'مردم',
-              style: theme.textTheme.headlineSmall,
-            );
-          case 3:
-            return Text(
-              'موردعلاقه',
-              style: theme.textTheme.headlineSmall,
-            );
-          case 4:
-            return Text(
-              'پروفایل',
-              style: theme.textTheme.headlineSmall,
-            );
-          case 5:
-            return Text(
-              'تنظیمات',
-              style: theme.textTheme.headlineSmall,
-            );
-          default:
-            return Text(
-              'وجود ندارد!',
-              style: theme.textTheme.headlineSmall,
-            );
-        }
-      },
     );
   }
 }

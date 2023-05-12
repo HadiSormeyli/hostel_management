@@ -1,18 +1,18 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
-import 'package:hostel_management/config/theme.dart';
-import 'package:hostel_management/presentaion/widgets/drop_down_widget.dart';
 import 'package:responsive_table/responsive_table.dart';
 
-class DataPage extends StatefulWidget {
-  const DataPage({Key? key}) : super(key: key);
+import '../../../config/theme.dart';
+import '../../widgets/drop_down_widget.dart';
+import 'add_violation_screen.dart';
+
+class ViolationScreen extends StatefulWidget {
+  const ViolationScreen({Key? key}) : super(key: key);
 
   @override
-  _DataPageState createState() => _DataPageState();
+  State<ViolationScreen> createState() => _ViolationState();
 }
 
-class _DataPageState extends State<DataPage> {
+class _ViolationState extends State<ViolationScreen> {
   final TextEditingController searchController = TextEditingController();
   final _searchKey = GlobalKey<FormState>();
 
@@ -29,33 +29,9 @@ class _DataPageState extends State<DataPage> {
   String? _sortColumn;
   bool _sortAscending = true;
   bool _isLoading = true;
-  var random = Random();
-
-  List<Map<String, dynamic>> _generateData({int n: 100}) {
-    final List source = List.filled(n, Random.secure());
-    List<Map<String, dynamic>> temps = [];
-    var i = 1;
-    // ignore: unused_local_variable
-    for (var data in source) {
-      temps.add({
-        "id": i,
-        "sku": "$i\000$i",
-        "name": "Product $i",
-        "category": "Category-$i",
-        "price": i * 10.00,
-        "cost": "20.00",
-        "margin": "${i}0.20",
-        "in_stock": "${i}0",
-        "alert": "5",
-        "received": [i + 20, 150]
-      });
-      i++;
-    }
-    return temps;
-  }
 
   _initializeData() async {
-    _mockPullData();
+    // _mockPullData();
   }
 
   _mockPullData() async {
@@ -64,7 +40,7 @@ class _DataPageState extends State<DataPage> {
     setState(() => _isLoading = true);
     Future.delayed(const Duration(seconds: 3)).then((value) {
       _sourceOriginal.clear();
-      _sourceOriginal.addAll(_generateData(n: random.nextInt(10000)));
+      // _sourceOriginal.addAll(_generateData(n: random.nextInt(10000)));
       _sourceFiltered = _sourceOriginal;
       _total = _sourceFiltered.length;
       _source = _sourceFiltered.getRange(0, _currentPerPage).toList();
@@ -84,7 +60,6 @@ class _DataPageState extends State<DataPage> {
     });
   }
 
-  //TODO:change this
   _filterData(value) {
     setState(() => _isLoading = true);
 
@@ -116,89 +91,81 @@ class _DataPageState extends State<DataPage> {
 
     _headers = [
       DatatableHeader(
-          text: "ID",
-          value: "id",
+          text: "کدملی",
+          value: "کدملی",
           show: true,
           sortable: true,
           textAlign: TextAlign.center),
       DatatableHeader(
-          text: "Name",
-          value: "name",
-          show: true,
-          flex: 2,
-          sortable: true,
-          editable: true,
-          textAlign: TextAlign.right),
-      DatatableHeader(
-          text: "SKU",
-          value: "sku",
+          text: "نام",
+          value: "نام",
           show: true,
           sortable: true,
           editable: true,
           textAlign: TextAlign.right),
       DatatableHeader(
-          text: "Category",
-          value: "category",
+          text: "نام خانوادگی",
+          value: "نام خانوادگی",
           show: true,
           sortable: true,
           editable: true,
           textAlign: TextAlign.right),
       DatatableHeader(
-          text: "Price",
-          value: "price",
+          text: "کدپستی",
+          value: "کدپستی",
           show: true,
           sortable: true,
           editable: true,
           textAlign: TextAlign.right),
       DatatableHeader(
-          text: "Margin",
-          value: "margin",
+          text: "آدرس",
+          value: "آدرس",
           show: true,
           sortable: true,
           editable: true,
           textAlign: TextAlign.right),
       DatatableHeader(
-          text: "In Stock",
-          value: "in_stock",
+          text: "استان",
+          value: "استان",
           show: true,
           sortable: true,
           editable: true,
           textAlign: TextAlign.right),
       DatatableHeader(
-          text: "Alert",
-          value: "alert",
+          text: "شهر",
+          value: "شهر",
           show: true,
           sortable: true,
           editable: true,
           textAlign: TextAlign.right),
       DatatableHeader(
-          text: "Received",
-          value: "received",
+          text: "تاریخ شروع به تحصیل",
+          value: "تاریخ شروع به تحصیل",
+          show: true,
+          sortable: true,
+          editable: true,
+          textAlign: TextAlign.right),
+      DatatableHeader(
+          text: "ترم ورود",
+          value: "ترم ورود",
           show: true,
           sortable: false,
-          sourceBuilder: (value, row) {
-            List list = List.from(value);
-            return Column(
-              children: [
-                SizedBox(
-                  width: 85,
-                  child: LinearProgressIndicator(
-                    value: list.first / list.last,
-                  ),
-                ),
-                Text("${list.first} of ${list.last}")
-              ],
-            );
-          },
+          textAlign: TextAlign.center),
+      DatatableHeader(
+          text: "وضعیت فعال بودن دانشجو",
+          value: "وضعیت فعال بودن دانشجو",
+          show: true,
+          sortable: false,
+          textAlign: TextAlign.center),
+      DatatableHeader(
+          text: "نوع پذیرش",
+          value: "نوع پذیرش",
+          show: true,
+          sortable: false,
           textAlign: TextAlign.center),
     ];
 
     _initializeData();
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
   }
 
   @override
@@ -216,11 +183,17 @@ class _DataPageState extends State<DataPage> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     const Text(
-                      'لیست دانشجویان',
+                      'لیست تخلفات',
                       style: TextStyle(fontSize: 16, fontWeight: bold),
                     ),
                     ElevatedButton(
-                        onPressed: () {},
+                        onPressed: () {
+                          Navigator.push(context, MaterialPageRoute(
+                            builder: ((context) {
+                              return const AddViolationScreen();
+                            }),
+                          ));
+                        },
                         style: ElevatedButton.styleFrom(
                           elevation: 0,
                           minimumSize: const Size(152, 48),
@@ -303,18 +276,25 @@ class _DataPageState extends State<DataPage> {
                               ],
                             ))),
                     DropDownWidget(
-                      items: ["hadi", "12", "13"],
-                      label: "سکونت",
+                      items: ["4", "5"],
+                      label: "ظرفیت خوابگاه",
                       onChanged: () {},
                     ),
                     DropDownWidget(
-                      items: ["hadi", "12", "13"],
-                      label: "سکونت",
+                      items: [for (var i = 1; i < 23; i++) i]
+                          .map((e) => "$e")
+                          .toList(),
+                      label: "شماره اتاق",
                       onChanged: () {},
                     ),
                     DropDownWidget(
-                      items: ["hadi", "12", "13"],
-                      label: "سکونت",
+                      items: ["میز", "موکت", "توری"],
+                      label: "اموال خوابگاه",
+                      onChanged: () {},
+                    ),
+                    DropDownWidget(
+                      items: ["موجود", "ناموجود"],
+                      label: "وضعیت موجودی اموال خوابگاه",
                       onChanged: () {},
                     ),
                     Padding(
