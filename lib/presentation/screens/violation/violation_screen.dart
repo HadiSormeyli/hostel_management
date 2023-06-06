@@ -1,7 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:hostel_management/presentation/blocs/violation/violation_bloc.dart';
+import 'package:hostel_management/presentation/blocs/violation/violation_event.dart';
+import 'package:provider/provider.dart';
 import 'package:responsive_table/responsive_table.dart';
 
 import '../../../config/theme.dart';
+import '../../../utils/constant.dart';
+import '../../blocs/violation/violation_state.dart';
 import '../../widgets/drop_down_widget.dart';
 import 'add_violation_screen.dart';
 
@@ -18,372 +24,364 @@ class _ViolationState extends State<ViolationScreen> {
 
   late List<DatatableHeader> _headers;
 
-  int _total = 100;
-  final int _currentPerPage = 100;
-  List<bool>? _expanded;
-
   final List<Map<String, dynamic>> _sourceOriginal = [];
   List<Map<String, dynamic>> _sourceFiltered = [];
   List<Map<String, dynamic>> _source = [];
 
-  String? _sortColumn;
-  bool _sortAscending = true;
   bool _isLoading = true;
-
-  _initializeData() async {
-    // _mockPullData();
-  }
-
-  _mockPullData() async {
-    _expanded = List.generate(_currentPerPage, (index) => false);
-
-    setState(() => _isLoading = true);
-    Future.delayed(const Duration(seconds: 3)).then((value) {
-      _sourceOriginal.clear();
-      // _sourceOriginal.addAll(_generateData(n: random.nextInt(10000)));
-      _sourceFiltered = _sourceOriginal;
-      _total = _sourceFiltered.length;
-      _source = _sourceFiltered.getRange(0, _currentPerPage).toList();
-      setState(() => _isLoading = false);
-    });
-  }
-
-  _resetData({start = 0}) async {
-    setState(() => _isLoading = true);
-    var expandedLen =
-        _total - start < _currentPerPage ? _total - start : _currentPerPage;
-    Future.delayed(const Duration(seconds: 0)).then((value) {
-      _expanded = List.generate(expandedLen as int, (index) => false);
-      _source.clear();
-      _source = _sourceFiltered.getRange(start, start + expandedLen).toList();
-      setState(() => _isLoading = false);
-    });
-  }
-
-  _filterData(value) {
-    setState(() => _isLoading = true);
-
-    try {
-      if (value == "" || value == null) {
-        _sourceFiltered = _sourceOriginal;
-      } else {
-        _sourceFiltered = _sourceOriginal
-            .where((data) => data[_searchKey!]
-                .toString()
-                .toLowerCase()
-                .contains(value.toString().toLowerCase()))
-            .toList();
-      }
-
-      _total = _sourceFiltered.length;
-      var rangeTop = _total < _currentPerPage ? _total : _currentPerPage;
-      _expanded = List.generate(rangeTop, (index) => false);
-      _source = _sourceFiltered.getRange(0, rangeTop).toList();
-    } catch (ignore) {
-      //
-    }
-    setState(() => _isLoading = false);
-  }
 
   @override
   void initState() {
     super.initState();
 
-    _headers = [
-      DatatableHeader(
-          text: "کدملی",
-          value: "کدملی",
-          show: true,
-          sortable: true,
-          textAlign: TextAlign.center),
-      DatatableHeader(
-          text: "نام",
-          value: "نام",
-          show: true,
-          sortable: true,
-          editable: true,
-          textAlign: TextAlign.right),
-      DatatableHeader(
-          text: "نام خانوادگی",
-          value: "نام خانوادگی",
-          show: true,
-          sortable: true,
-          editable: true,
-          textAlign: TextAlign.right),
-      DatatableHeader(
-          text: "کدپستی",
-          value: "کدپستی",
-          show: true,
-          sortable: true,
-          editable: true,
-          textAlign: TextAlign.right),
-      DatatableHeader(
-          text: "آدرس",
-          value: "آدرس",
-          show: true,
-          sortable: true,
-          editable: true,
-          textAlign: TextAlign.right),
-      DatatableHeader(
-          text: "استان",
-          value: "استان",
-          show: true,
-          sortable: true,
-          editable: true,
-          textAlign: TextAlign.right),
-      DatatableHeader(
-          text: "شهر",
-          value: "شهر",
-          show: true,
-          sortable: true,
-          editable: true,
-          textAlign: TextAlign.right),
-      DatatableHeader(
-          text: "تاریخ شروع به تحصیل",
-          value: "تاریخ شروع به تحصیل",
-          show: true,
-          sortable: true,
-          editable: true,
-          textAlign: TextAlign.right),
-      DatatableHeader(
-          text: "ترم ورود",
-          value: "ترم ورود",
-          show: true,
-          sortable: false,
-          textAlign: TextAlign.center),
-      DatatableHeader(
-          text: "وضعیت فعال بودن دانشجو",
-          value: "وضعیت فعال بودن دانشجو",
-          show: true,
-          sortable: false,
-          textAlign: TextAlign.center),
-      DatatableHeader(
-          text: "نوع پذیرش",
-          value: "نوع پذیرش",
-          show: true,
-          sortable: false,
-          textAlign: TextAlign.center),
-    ];
-
-    _initializeData();
+    Future.microtask(
+      () => Provider.of<ViolationBloc>(context, listen: false)
+          .add(const ViolationEvent()),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-        body: Container(
-      margin: const EdgeInsets.all(smallDistance),
-      child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          mainAxisSize: MainAxisSize.max,
-          children: [
-            Container(
-                padding: const EdgeInsets.all(smallDistance),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text(
-                      'لیست تخلفات',
-                      style: TextStyle(fontSize: 16, fontWeight: bold),
-                    ),
-                    ElevatedButton(
-                        onPressed: () {
-                          Navigator.push(context, MaterialPageRoute(
-                            builder: ((context) {
-                              return const AddViolationScreen();
-                            }),
-                          ));
-                        },
-                        style: ElevatedButton.styleFrom(
-                          elevation: 0,
-                          minimumSize: const Size(152, 48),
-                          backgroundColor: primaryColor,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(smallRadius),
-                          ),
+    return Scaffold(body:
+        BlocBuilder<ViolationBloc, ViolationState>(builder: (context, state) {
+      _createHeaders();
+      if (state is ViolationLoading) {
+        _sourceOriginal.clear();
+        _sourceFiltered = _sourceOriginal;
+        _source = _sourceFiltered.toList();
+        _isLoading = true;
+      } else if (state is ViolationSuccess) {
+        _sourceOriginal.clear();
+        _sourceOriginal.addAll(state.violations);
+        _sourceFiltered = _sourceOriginal;
+        _source = _sourceFiltered.toList();
+        _isLoading = false;
+      } else if (state is ViolationEmpty) {
+        _isLoading = false;
+      }
+
+      return Container(
+          margin: const EdgeInsets.all(smallDistance),
+          child: Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              mainAxisSize: MainAxisSize.max,
+              children: [
+                Container(
+                    padding: const EdgeInsets.all(smallDistance),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          'اطلاعات تخلفات',
+                          style: TextStyle(fontSize: 16, fontWeight: bold),
                         ),
-                        child: const Text(
-                          'افزودن',
-                          style: TextStyle(
-                            fontWeight: bold,
-                          ),
-                        ))
-                  ],
-                )),
-            Card(
-              elevation: 4,
-              shadowColor: Colors.black,
-              clipBehavior: Clip.none,
-              child: Container(
-                padding: const EdgeInsets.all(smallDistance),
-                child: Row(
-                  children: [
-                    Expanded(
-                        child: Container(
-                            margin: const EdgeInsets.all(smallDistance),
-                            width: 288,
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Container(
-                                  margin: const EdgeInsets.all(smallDistance),
-                                  child: const Text('دنبال چی میگردی؟'),
-                                ),
-                                SizedBox(
-                                  height: 48,
-                                  child: Form(
-                                      key: _searchKey,
-                                      child: TextFormField(
-                                        maxLength: 20,
-                                        controller: searchController,
-                                        maxLines: 1,
-                                        keyboardType: TextInputType.number,
-                                        decoration: InputDecoration(
-                                          counterText: "",
-                                          hintText: 'جستجو شماره دانشجویی',
-                                          hintStyle: TextStyle(
-                                            color: Colors.grey.withOpacity(0.4),
-                                          ),
-                                          enabledBorder: OutlineInputBorder(
-                                            borderSide: BorderSide(
-                                                color: Colors.grey
-                                                    .withOpacity(0.3)),
-                                            borderRadius: BorderRadius.circular(
-                                                mediumRadius),
-                                          ),
-                                          focusedBorder: OutlineInputBorder(
-                                            borderSide: const BorderSide(
-                                                color: primaryColor),
-                                            borderRadius: BorderRadius.circular(
-                                                mediumRadius),
-                                          ),
-                                          errorBorder: OutlineInputBorder(
-                                            borderSide: const BorderSide(
-                                                color: Colors.red),
-                                            borderRadius: BorderRadius.circular(
-                                                mediumRadius),
-                                          ),
-                                          focusedErrorBorder:
-                                              OutlineInputBorder(
-                                            borderSide: const BorderSide(
-                                                color: Colors.red),
-                                            borderRadius: BorderRadius.circular(
-                                                mediumRadius),
-                                          ),
-                                        ),
-                                      )),
-                                )
-                              ],
-                            ))),
-                    DropDownWidget(
-                      items: ["4", "5"],
-                      label: "ظرفیت خوابگاه",
-                      onChanged: () {},
-                    ),
-                    DropDownWidget(
-                      items: [for (var i = 1; i < 23; i++) i]
-                          .map((e) => "$e")
-                          .toList(),
-                      label: "شماره اتاق",
-                      onChanged: () {},
-                    ),
-                    DropDownWidget(
-                      items: ["میز", "موکت", "توری"],
-                      label: "اموال خوابگاه",
-                      onChanged: () {},
-                    ),
-                    DropDownWidget(
-                      items: ["موجود", "ناموجود"],
-                      label: "وضعیت موجودی اموال خوابگاه",
-                      onChanged: () {},
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.only(top: xLargeDistance),
-                      child: ElevatedButton(
-                          onPressed: () {},
-                          style: ElevatedButton.styleFrom(
-                            elevation: 0,
-                            backgroundColor: primaryColor,
-                            minimumSize: const Size(152, 48),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(smallRadius),
+                        ElevatedButton(
+                            onPressed: () {
+                              Navigator.push(context, MaterialPageRoute(
+                                builder: ((context) {
+                                  return const AddViolationScreen();
+                                }),
+                              ));
+                            },
+                            style: ElevatedButton.styleFrom(
+                              elevation: 0,
+                              minimumSize: const Size(152, 48),
+                              backgroundColor: primaryColor,
+                              shape: RoundedRectangleBorder(
+                                borderRadius:
+                                    BorderRadius.circular(smallRadius),
+                              ),
                             ),
-                          ),
-                          child: const Text(
-                            'جستجو',
-                            style: TextStyle(
-                              fontWeight: bold,
-                            ),
-                          )),
-                    )
-                  ],
-                ),
-              ),
-            ),
-            Expanded(
-              child: Card(
+                            child: const Text(
+                              'افزودن تخلفات',
+                              style: TextStyle(
+                                fontWeight: bold,
+                              ),
+                            ))
+                      ],
+                    )),
+                Card(
                   elevation: 4,
                   shadowColor: Colors.black,
                   clipBehavior: Clip.none,
                   child: Container(
-                    padding: const EdgeInsets.only(top: smallDistance),
-                    child: ResponsiveDatatable(
-                      reponseScreenSizes: const [ScreenSize.xs],
-                      headers: _headers,
-                      source: _source,
-                      showSelect: false,
-                      autoHeight: false,
-                      onChangedRow: (value, header) {},
-                      onSubmittedRow: (value, header) {
-                        print(value);
-                      },
-                      onTabRow: (data) {},
-                      onSort: (value) {
-                        setState(() => _isLoading = true);
-
-                        setState(() {
-                          _sortColumn = value;
-                          _sortAscending = !_sortAscending;
-                          if (_sortAscending) {
-                            _sourceFiltered.sort((a, b) =>
-                                b["$_sortColumn"].compareTo(a["$_sortColumn"]));
-                          } else {
-                            _sourceFiltered.sort((a, b) =>
-                                a["$_sortColumn"].compareTo(b["$_sortColumn"]));
-                          }
-                          var rangeTop =
-                              _currentPerPage < _sourceFiltered.length
-                                  ? _currentPerPage
-                                  : _sourceFiltered.length;
-                          _source =
-                              _sourceFiltered.getRange(0, rangeTop).toList();
-
-                          _isLoading = false;
-                        });
-                      },
-                      expanded: _expanded,
-                      sortAscending: _sortAscending,
-                      sortColumn: _sortColumn,
-                      isLoading: _isLoading,
-                      selecteds: const [],
-                      headerDecoration: const BoxDecoration(
-                          color: actionColor,
-                          border: Border(
-                              bottom:
-                                  BorderSide(color: primaryColor, width: 1))),
-                      selectedDecoration: BoxDecoration(
-                        border: Border(
-                            bottom: BorderSide(
-                                color: Colors.green[300]!, width: 1)),
-                        color: Colors.green,
-                      ),
-                      headerTextStyle: const TextStyle(color: Colors.white),
-                      rowTextStyle: const TextStyle(color: Colors.green),
-                      selectedTextStyle: const TextStyle(color: Colors.white),
+                    padding: const EdgeInsets.all(smallDistance),
+                    child: Row(
+                      children: [
+                        Expanded(
+                            child: Container(
+                                margin: const EdgeInsets.all(smallDistance),
+                                width: 288,
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Container(
+                                      margin:
+                                          const EdgeInsets.all(smallDistance),
+                                      child: const Text('دنبال چی میگردی؟'),
+                                    ),
+                                    SizedBox(
+                                      height: 48,
+                                      child: Form(
+                                          key: _searchKey,
+                                          child: TextFormField(
+                                            maxLength: 20,
+                                            onChanged: (text) {
+                                              violationFilter["StudentNumber"] =
+                                                  text;
+                                            },
+                                            controller: searchController,
+                                            maxLines: 1,
+                                            keyboardType: TextInputType.number,
+                                            decoration: InputDecoration(
+                                              counterText: "",
+                                              hintText: 'جستجو شماره دانشجویی',
+                                              hintStyle: TextStyle(
+                                                color: Colors.grey
+                                                    .withOpacity(0.4),
+                                              ),
+                                              enabledBorder: OutlineInputBorder(
+                                                borderSide: BorderSide(
+                                                    color: Colors.grey
+                                                        .withOpacity(0.3)),
+                                                borderRadius:
+                                                    BorderRadius.circular(
+                                                        mediumRadius),
+                                              ),
+                                              focusedBorder: OutlineInputBorder(
+                                                borderSide: const BorderSide(
+                                                    color: primaryColor),
+                                                borderRadius:
+                                                    BorderRadius.circular(
+                                                        mediumRadius),
+                                              ),
+                                              errorBorder: OutlineInputBorder(
+                                                borderSide: const BorderSide(
+                                                    color: Colors.red),
+                                                borderRadius:
+                                                    BorderRadius.circular(
+                                                        mediumRadius),
+                                              ),
+                                              focusedErrorBorder:
+                                                  OutlineInputBorder(
+                                                borderSide: const BorderSide(
+                                                    color: Colors.red),
+                                                borderRadius:
+                                                    BorderRadius.circular(
+                                                        mediumRadius),
+                                              ),
+                                            ),
+                                          )),
+                                    )
+                                  ],
+                                ))),
+                        DropDownWidget(
+                          items: [for (var i = 1380; i <= 1401; i++) i]
+                              .map((e) => "${(e)}/06/30")
+                              .toList(),
+                          label: "نیمسال ورودی",
+                          onChanged: (value) {
+                            violationFilter["EntrySemester"] =
+                                (value == 'همه') ? '-1' : value;
+                          },
+                        ),
+                        DropDownWidget(
+                          items: ["خاص", "عادی"],
+                          label: "نوع تخلف",
+                          onChanged: (value) {
+                            violationFilter["ViolationCode"] = (value == 'همه')
+                                ? '-1'
+                                : (value == 'خاص')
+                                    ? '1'
+                                    : '2';
+                          },
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.only(top: xLargeDistance),
+                          child: ElevatedButton(
+                              onPressed: () {
+                                Future.microtask(
+                                  () => Provider.of<ViolationBloc>(context,
+                                          listen: false)
+                                      .add(const ViolationEvent()),
+                                );
+                              },
+                              style: ElevatedButton.styleFrom(
+                                elevation: 0,
+                                backgroundColor: primaryColor,
+                                minimumSize: const Size(152, 48),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius:
+                                      BorderRadius.circular(smallRadius),
+                                ),
+                              ),
+                              child: const Text(
+                                'جستجو',
+                                style: TextStyle(
+                                  fontWeight: bold,
+                                ),
+                              )),
+                        )
+                      ],
                     ),
-                  )),
-            ),
-          ]),
-    ));
+                  ),
+                ),
+                Expanded(child: _buildTable()),
+              ]));
+    }));
+  }
+
+  void _createHeaders() {
+    Map<String, dynamic> sample = {
+      "شماره دانشجویی": 98484112,
+      "نام": "احمد",
+      "نام خانوادگی": "سلیمی",
+      "نوع تخلف": "عادی",
+      "شرح تخلف": "انجام اعمال خلاف اخلاق",
+      "نتیجه نهایی بررسی": "تأیید و اخذ تعهد"
+    };
+    final _keys = sample.entries.toList().map((e) => e.key);
+    _headers = [
+      DatatableHeader(
+          text: _keys.elementAt(0),
+          value: _keys.elementAt(0),
+          show: true,
+          sortable: false,
+          textAlign: TextAlign.center),
+      DatatableHeader(
+          text: _keys.elementAt(1),
+          value: _keys.elementAt(1),
+          show: true,
+          sortable: false,
+          textAlign: TextAlign.center),
+      DatatableHeader(
+          text: _keys.elementAt(2),
+          value: _keys.elementAt(2),
+          show: true,
+          sortable: false,
+          textAlign: TextAlign.center),
+      DatatableHeader(
+          text: _keys.elementAt(3),
+          value: _keys.elementAt(3),
+          show: true,
+          editable: true,
+          sourceBuilder: (value, row) {
+            return Center(
+                child: DropDownWidget(
+              items: ["خاص", "عادی"],
+              selectedValue: value,
+              onChanged: (value) {
+                row['نوع تخلف'] = value;
+
+                Future.microtask(() =>
+                    Provider.of<ViolationBloc>(context, listen: false)
+                        .add(UpdateViolationEvent(row)));
+              },
+            ));
+          },
+          sortable: false,
+          textAlign: TextAlign.center),
+      DatatableHeader(
+          text: _keys.elementAt(4),
+          value: _keys.elementAt(4),
+          show: true,
+          flex: 3,
+          sourceBuilder: (value, row) {
+            return Center(
+                child: DropDownWidget(
+              width: 340,
+              items: [
+                "ایجاد مزاحمت و سر و صدا",
+                "نوشتن شعارهای مغایر اصول و موازین اسلامی",
+                "انجام اعمال خلاف اخلاق",
+                "مصرف،فروش و کشت مواد مخدر",
+                "حمل سلاح گرم یا سرد",
+                "ارتکاب قتل"
+              ],
+              selectedValue: value,
+              onChanged: (value) {
+                row['شرح تخلف'] = value;
+
+                Future.microtask(() =>
+                    Provider.of<ViolationBloc>(context, listen: false)
+                        .add(UpdateViolationEvent(row)));
+              },
+            ));
+          },
+          editable: true,
+          sortable: false,
+          textAlign: TextAlign.center),
+      DatatableHeader(
+          text: _keys.elementAt(5),
+          value: _keys.elementAt(5),
+          show: true,
+          editable: true,
+          flex: 2,
+          sourceBuilder: (value, row) {
+            return Center(
+              child: DropDownWidget(
+                items: [
+                  "تأیید و اخذ تعهد",
+                  "تأیید و تشکیل پرونده انضباطی",
+                  "عدم تأیید"
+                ],
+                width: 260,
+                selectedValue: value,
+                onChanged: (value) {
+                  row['نتیجه نهایی بررسی'] = value;
+
+                  Future.microtask(
+                    () => Provider.of<ViolationBloc>(context, listen: false)
+                        .add(UpdateViolationEvent(row)),
+                  );
+                },
+              ),
+            );
+          },
+          sortable: false,
+          textAlign: TextAlign.center),
+    ];
+  }
+
+  Widget _buildTable() {
+    return Card(
+      elevation: 4,
+      shadowColor: Colors.black,
+      clipBehavior: Clip.none,
+      child: Container(
+        padding: const EdgeInsets.only(top: smallDistance),
+        child: ResponsiveDatatable(
+          expanded: List.generate(_source.length, (index) => false),
+          reponseScreenSizes: const [ScreenSize.xs],
+          headers: _headers,
+          source: _source,
+          showSelect: false,
+          autoHeight: false,
+          onChangedRow: (value, header) {},
+          onSubmittedRow: (value, header) {
+            Future.microtask(
+              () => Provider.of<ViolationBloc>(context, listen: false)
+                  .add(UpdateViolationEvent(value)),
+            );
+          },
+          onTabRow: (data) {},
+          onSort: (value) {},
+          isLoading: _isLoading,
+          selecteds: const [],
+          headerDecoration: const BoxDecoration(
+              color: actionColor,
+              border:
+                  Border(bottom: BorderSide(color: primaryColor, width: 1))),
+          selectedDecoration: BoxDecoration(
+            border:
+                Border(bottom: BorderSide(color: Colors.green[300]!, width: 1)),
+            color: Colors.green,
+          ),
+          headerTextStyle: const TextStyle(color: Colors.white),
+          rowTextStyle: const TextStyle(color: Colors.green),
+          selectedTextStyle: const TextStyle(color: Colors.white),
+        ),
+      ),
+    );
   }
 }

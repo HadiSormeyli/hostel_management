@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../config/theme.dart';
+import 'constant.dart';
 
 String? validateFirstName(String? value) {
   return value!.isEmpty ? 'لطفا نام را وارد کنید.' : null;
@@ -13,7 +14,7 @@ String? validateLastName(String? value) {
 String? validateMobile(String? value) {
   String pattern = r'(^(?:[+0]9)?[0-9]{10,12}$)';
   RegExp regExp = RegExp(pattern);
-  if (value!.isEmpty || value.length < 11) {
+  if (value!.isEmpty || value.length < 9) {
     return 'لطفا شماره موبایل را درست  وارد کنید.';
   }
   return null;
@@ -22,7 +23,7 @@ String? validateMobile(String? value) {
 String? validateNationalCode(String? nationalCode) {
   if (nationalCode == null ||
       nationalCode.isEmpty ||
-      nationalCode.length < 10) {
+      nationalCode.length < 9) {
     return 'لطفا عدد را وارد کنید.';
   }
   return null;
@@ -83,7 +84,7 @@ String? validateAddress(String? address) {
 String? validatePostCode(String? postCode) {
   if (postCode == null || postCode.isEmpty) {
     return 'لطفا کدپستی را وارد کنید.';
-  } else if (postCode.length < 10) {
+  } else if (postCode.length < 9) {
     return 'لطفا کدپستی را کامل وارد کنید.';
   }
   return null;
@@ -135,3 +136,88 @@ void createSnackBar(BuildContext context, String message) {
 
   ScaffoldMessenger.of(context).showSnackBar(snackBar);
 }
+
+void initAddStudent() {
+  addStudent = {
+    "NationalCode": "Null",
+    "Name": "Null",
+    "LastName": "Null",
+    "IdNumber": "Null",
+    "IdentitySerialNumber": "Null",
+    "Nationality": "Null",
+    "Religion": "Null",
+    "Gilder": "Null",
+    "CellularPhone": "Null",
+    "MothersPhone": "Null",
+    "FathersPhone": "Null",
+    "EmailAddress": "Null",
+    "FathersName": "Null",
+    "MothersName": "Null",
+    "BirthPlace": "Null",
+    "BirthCertificateIssuingPlace": "Null",
+    "DateOfBirth": "Null",
+    "GenderCode": "1",
+    "MaritalStatusCode": "1",
+    "DutySystemCode": "1",
+    "PostalCode": "Null",
+    "Address": "Null",
+    "State": "Null",
+    "City": "Null",
+
+    "StudentNumber": "Null",
+    "StartDateOfStudy": "Null",
+    "DateOfGraduation": "Null",
+    "EntrySemester": "Null",
+
+    "FieldOfStudyCode": "1",
+    "OrientationCode": "1",
+    "AcceptanceTypeCode": "1",
+    "GroupCode": "1",
+    "SectionCode": "1",
+    "CollegeCode": "1",
+    "ActivityCheckStatusCode": "1",
+  };
+}
+
+void initAddDorm() {
+  addDorm = {
+    "StudentNumber":"Null",
+    "HostelCode":"1",
+    "RoomCode":"1",
+    "InventoryOfTheHostelPropertyCode":"1",
+    "HostelPropertyCode":"1",
+  };
+}
+
+void initAddDormFinance() {
+  addDormFinance = {
+    "DepositReceiptNumber":"Null",
+    "DepositAmount":"Null",
+    "DepositDate":"Null",
+
+    "StudentNumber":"Null",
+    "HostelPropertyCode":"1",
+    "PropertyDamageCode":"1",
+    "FinancialReviewStatusCode":"1",
+
+    "DateOfArrivalAtTheHostel":"Null",
+    "DateOfDeparture":"Null",
+    "DebtAmount":"Null",
+    "FullNameOfTheHostelSupervisor":"Null",
+    "DescriptionOfTheDormitory":"Null",
+    "SettlementDate":"Null",
+    "FormCompletionDate":"Null",
+
+    "TheAmountOfDamageCaused":"1",
+  };
+}
+
+void initAddViolation() {
+  addViolation = {
+    "StudentNumber":"Null",
+    "ComplaintCode":"1",
+    "ViolationCode":"1",
+    "ViolationCheckCode":"1",
+  };
+}
+

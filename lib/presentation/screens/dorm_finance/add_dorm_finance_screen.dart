@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:hostel_management/presentation/blocs/dorm_finance/dorm_finance_bloc.dart';
+import 'package:hostel_management/utils/constant.dart';
 import 'package:persian_datetime_picker/persian_datetime_picker.dart';
+import 'package:provider/provider.dart';
 
 import '../../../config/theme.dart';
 import '../../../utils/utils.dart';
+import '../../blocs/dorm_finance/dorm_finance_event.dart';
 import '../../widgets/drop_down_widget.dart';
 
 class AddDormFinanceScreen extends StatefulWidget {
@@ -28,20 +32,25 @@ class _AddDormFinanceScreenState extends State<AddDormFinanceScreen> {
       TextEditingController();
 
   final _studentNumberKey = GlobalKey<FormState>();
-  final _enterTermKey = GlobalKey<FormState>();
   final _amountOwedKey = GlobalKey<FormState>();
   final _amountGiveKey = GlobalKey<FormState>();
   final _fishNumberKey = GlobalKey<FormState>();
   final _supervisorNameKey = GlobalKey<FormState>();
   final _supervisorLastNameKey = GlobalKey<FormState>();
   final _descriptionNameKey = GlobalKey<FormState>();
-  final _completionDateDateKey = GlobalKey<FormState>();
 
   String startDateLabel = '';
   String endDateLabel = '';
   String fishDateLabel = '';
   String setDateLabel = '';
+  String formDateLabel = '';
   String selectedDate = Jalali.now().toJalaliDateTime();
+
+  @override
+  void initState() {
+    super.initState();
+    initAddDormFinance();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -106,44 +115,6 @@ class _AddDormFinanceScreenState extends State<AddDormFinanceScreen> {
                 const SizedBox(
                   height: smallDistance,
                 ),
-                Form(
-                    key: _enterTermKey,
-                    child: TextFormField(
-                      maxLength: 8,
-                      inputFormatters: [
-                        FilteringTextInputFormatter.allow(RegExp(
-                            '[1234567890 آابپتثجچحخدذرزژسشصضطظعغفقکگلمنوهی]'))
-                      ],
-                      controller: enterTermController,
-                      maxLines: 1,
-                      keyboardType: TextInputType.number,
-                      decoration: InputDecoration(
-                        counterText: "",
-                        labelText: 'ترم ورود',
-                        labelStyle: const TextStyle(
-                          color: Colors.grey,
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderSide: const BorderSide(color: Colors.grey),
-                          borderRadius: BorderRadius.circular(smallRadius),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderSide: const BorderSide(color: primaryColor),
-                          borderRadius: BorderRadius.circular(smallRadius),
-                        ),
-                        errorBorder: OutlineInputBorder(
-                          borderSide: const BorderSide(color: Colors.red),
-                          borderRadius: BorderRadius.circular(smallDistance),
-                        ),
-                        focusedErrorBorder: OutlineInputBorder(
-                          borderSide: const BorderSide(color: Colors.red),
-                          borderRadius: BorderRadius.circular(smallDistance),
-                        ),
-                      ),
-                    )),
-                const SizedBox(
-                  height: smallDistance,
-                ),
                 Row(
                   children: [
                     Column(
@@ -164,7 +135,7 @@ class _AddDormFinanceScreenState extends State<AddDormFinanceScreen> {
                             if (picked != null && picked != selectedDate) {
                               setState(() {
                                 startDateLabel =
-                                    "${picked.year}/${picked.month}/${picked.day}";
+                                    "${picked.year}/${picked.month.toString().padLeft(2, '0')}/${picked.day.toString().padLeft(2, '0')}";
                               });
                             }
                           },
@@ -191,6 +162,48 @@ class _AddDormFinanceScreenState extends State<AddDormFinanceScreen> {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        const Text("تاریخ تکمیل فرم"),
+                        const SizedBox(
+                          height: smallDistance,
+                        ),
+                        GestureDetector(
+                          onTap: () async {
+                            Jalali? picked = await showPersianDatePicker(
+                              context: context,
+                              initialDate: Jalali.now(),
+                              firstDate: Jalali(1385, 8),
+                              lastDate: Jalali(1450, 9),
+                            );
+                            if (picked != null && picked != selectedDate) {
+                              setState(() {
+                                formDateLabel =
+                                    "${picked.year}/${picked.month.toString().padLeft(2, '0')}/${picked.day.toString().padLeft(2, '0')}";
+                              });
+                            }
+                          },
+                          child: Container(
+                            margin: const EdgeInsets.only(top: 4),
+                            padding: const EdgeInsets.all(smallDistance),
+                            alignment: Alignment.centerRight,
+                            height: 48,
+                            width: 248,
+                            decoration: BoxDecoration(
+                              color: canvasColor,
+                              borderRadius: BorderRadius.circular(mediumRadius),
+                            ),
+                            child: Text((formDateLabel.isEmpty)
+                                ? 'تاریخ تکمیل فرم را انتخاب کنید.'
+                                : formDateLabel),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(
+                      width: smallDistance,
+                    ),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
                         const Text("تاریخ خروج"),
                         const SizedBox(
                           height: smallDistance,
@@ -206,7 +219,7 @@ class _AddDormFinanceScreenState extends State<AddDormFinanceScreen> {
                             if (picked != null && picked != selectedDate) {
                               setState(() {
                                 endDateLabel =
-                                    "${picked.year}/${picked.month}/${picked.day}";
+                                    "${picked.year}/${picked.month.toString().padLeft(2, '0')}/${picked.day.toString().padLeft(2, '0')}";
                               });
                             }
                           },
@@ -248,7 +261,7 @@ class _AddDormFinanceScreenState extends State<AddDormFinanceScreen> {
                             if (picked != null && picked != selectedDate) {
                               setState(() {
                                 fishDateLabel =
-                                    "${picked.year}/${picked.month}/${picked.day}";
+                                    "${picked.year}/${picked.month.toString().padLeft(2, '0')}/${picked.day.toString().padLeft(2, '0')}";
                               });
                             }
                           },
@@ -290,7 +303,7 @@ class _AddDormFinanceScreenState extends State<AddDormFinanceScreen> {
                             if (picked != null && picked != selectedDate) {
                               setState(() {
                                 setDateLabel =
-                                    "${picked.year}/${picked.month}/${picked.day}";
+                                    "${picked.year}/${picked.month.toString().padLeft(2, '0')}/${picked.day.toString().padLeft(2, '0')}";
                               });
                             }
                           },
@@ -319,34 +332,91 @@ class _AddDormFinanceScreenState extends State<AddDormFinanceScreen> {
                 Row(
                   children: [
                     DropDownWidget(
-                        items: ["کامپیوتر", "انسانی"],
-                        onChanged: () {},
-                        selectedValue: "کامپیوتر",
+                        items: [
+                          "شهید عسگری نژاد",
+                          "شهید بابازاده",
+                          "شهید فرجامی",
+                          "شهید ناصر بخت",
+                          "شهید علیخانی",
+                          "شهید نوری",
+                          "روغنی زنجانی",
+                          "دکترا 2"
+                        ],
+                        onChanged: (value) {
+                          addDormFinance['HostelPropertyCode'] = ([
+                                    "شهید عسگری نژاد",
+                                    "شهید بابازاده",
+                                    "شهید فرجامی",
+                                    "شهید ناصر بخت",
+                                    "شهید علیخانی",
+                                    "شهید نوری",
+                                    "روغنی زنجانی",
+                                    "دکترا 2"
+                                  ].indexOf(value) +
+                                  1)
+                              .toString();
+                        },
+                        selectedValue: "شهید عسگری نژاد",
                         label: "نام خوابگاه"),
                     const SizedBox(
                       width: smallDistance,
                     ),
                     DropDownWidget(
-                        items: ["مرد", "زن"],
-                        onChanged: () {},
-                        selectedValue: "مرد",
-                        label: "شماره اتاق"),
-                    const SizedBox(
-                      width: smallDistance,
-                    ),
-                    DropDownWidget(
-                        items: ["معاف", "گذرانده"],
-                        onChanged: () {},
-                        selectedValue: "معاف",
+                        items: [
+                          "میز",
+                          "موکت",
+                          "توری",
+                          "فرش",
+                          "صندلی",
+                          "نوپان",
+                          "کلید"
+                        ],
+                        onChanged: (value) {
+                          addDormFinance['HostelPropertyCode'] = ([
+                                    "میز",
+                                    "موکت",
+                                    "توری",
+                                    "فرش",
+                                    "صندلی",
+                                    "نوپان",
+                                    "کلید"
+                                  ].indexOf(value) +
+                                  1)
+                              .toString();
+                        },
+                        selectedValue: "میز",
                         label: "اموال خسارت دیده"),
                     const SizedBox(
                       width: smallDistance,
                     ),
                     DropDownWidget(
-                        items: ["کامپیوتر", "انسانی"],
-                        onChanged: () {},
-                        selectedValue: "کامپیوتر",
+                        items: ["تایید", "عدم تایید"],
+                        onChanged: (value) {
+                          addDormFinance['FinancialReviewStatusCode'] =
+                              (["تایید", "عدم تایید"].indexOf(value) + 1)
+                                  .toString();
+                        },
+                        selectedValue: "تایید",
                         label: "وضعیت بررسی"),
+                    const SizedBox(
+                      width: smallDistance,
+                    ),
+                    DropDownWidget(
+                        items: ["20%", "40%", "60%", "80%", "100%", "0"],
+                        onChanged: (value) {
+                          addDormFinance['PropertyDamageCode'] = ([
+                                    "20%",
+                                    "40%",
+                                    "60%",
+                                    "80%",
+                                    "100%",
+                                    "0"
+                                  ].indexOf(value) +
+                                  1)
+                              .toString();
+                        },
+                        selectedValue: "20%",
+                        label: "میزان خسارت وارده"),
                   ],
                 ),
                 const SizedBox(
@@ -475,7 +545,7 @@ class _AddDormFinanceScreenState extends State<AddDormFinanceScreen> {
                       maxLength: 8,
                       inputFormatters: [
                         FilteringTextInputFormatter.allow(
-                            RegExp('[1234567890]'))
+                            RegExp('[ آابپتثجچحخدذرزژسشصضطظعغفقکگلمنوهی]'))
                       ],
                       controller: supervisorNameController,
                       maxLines: 1,
@@ -514,7 +584,7 @@ class _AddDormFinanceScreenState extends State<AddDormFinanceScreen> {
                       maxLength: 8,
                       inputFormatters: [
                         FilteringTextInputFormatter.allow(
-                            RegExp('[1234567890]'))
+                            RegExp('[ آابپتثجچحخدذرزژسشصضطظعغفقکگلمنوهی]'))
                       ],
                       controller: supervisorLastNameController,
                       maxLines: 1,
@@ -552,7 +622,7 @@ class _AddDormFinanceScreenState extends State<AddDormFinanceScreen> {
                       maxLength: 8,
                       inputFormatters: [
                         FilteringTextInputFormatter.allow(
-                            RegExp('[1234567890]'))
+                            RegExp('[ آابپتثجچحخدذرزژسشصضطظعغفقکگلمنوهی]'))
                       ],
                       controller: descriptionController,
                       maxLines: 1,
@@ -560,44 +630,6 @@ class _AddDormFinanceScreenState extends State<AddDormFinanceScreen> {
                       decoration: InputDecoration(
                         counterText: "",
                         labelText: 'توضیحات بخش خوابگاه',
-                        labelStyle: const TextStyle(
-                          color: Colors.grey,
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderSide: const BorderSide(color: Colors.grey),
-                          borderRadius: BorderRadius.circular(smallRadius),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderSide: const BorderSide(color: primaryColor),
-                          borderRadius: BorderRadius.circular(smallRadius),
-                        ),
-                        errorBorder: OutlineInputBorder(
-                          borderSide: const BorderSide(color: Colors.red),
-                          borderRadius: BorderRadius.circular(smallDistance),
-                        ),
-                        focusedErrorBorder: OutlineInputBorder(
-                          borderSide: const BorderSide(color: Colors.red),
-                          borderRadius: BorderRadius.circular(smallDistance),
-                        ),
-                      ),
-                    )),
-                const SizedBox(
-                  height: smallDistance,
-                ),
-                Form(
-                    key: _completionDateDateKey,
-                    child: TextFormField(
-                      maxLength: 8,
-                      inputFormatters: [
-                        FilteringTextInputFormatter.allow(
-                            RegExp('[1234567890]'))
-                      ],
-                      controller: completionDateController,
-                      maxLines: 1,
-                      keyboardType: TextInputType.number,
-                      decoration: InputDecoration(
-                        counterText: "",
-                        labelText: 'تاریخ تکمیل فرم',
                         labelStyle: const TextStyle(
                           color: Colors.grey,
                         ),
@@ -629,8 +661,35 @@ class _AddDormFinanceScreenState extends State<AddDormFinanceScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 ElevatedButton(
-                  onPressed: () {
+                  onPressed: () async {
                     if (_studentNumberKey.currentState!.validate()) {
+                      addDormFinance['StudentNumber'] =
+                          studentNumberController.value.text;
+                      addDormFinance['DebtAmount'] =
+                          amountOwedController.value.text;
+                      addDormFinance['DepositAmount'] =
+                          amountGiveController.value.text;
+                      addDormFinance['DepositReceiptNumber'] =
+                          fishNumberController.value.text;
+                      addDormFinance['DepositReceiptNumber'] =
+                          fishNumberController.value.text;
+                      addDormFinance['FullNameOfTheHostelSupervisor'] =
+                          "${supervisorNameController.value.text} ${supervisorLastNameController.value.text}";
+                      addDormFinance['DescriptionOfTheDormitory'] =
+                          descriptionController.value.text;
+
+                      addDormFinance['FormCompletionDate'] = formDateLabel;
+                      addDormFinance['SettlementDate'] = setDateLabel;
+                      addDormFinance['DateOfArrivalAtTheHostel'] =
+                          startDateLabel;
+                      addDormFinance['DateOfDeparture'] = endDateLabel;
+                      addDormFinance['DepositDate'] = fishDateLabel;
+
+                      await Future.microtask(
+                        () =>
+                            Provider.of<DormFinanceBloc>(context, listen: false)
+                                .add(const AddDormFinanceEvent()),
+                      );
                       Navigator.pop(context);
                     }
                   },

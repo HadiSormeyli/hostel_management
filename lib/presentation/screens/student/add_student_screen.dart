@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../../../config/theme.dart';
+import '../../../utils/utils.dart';
+import '../../blocs/student_bloc/student_bloc.dart';
+import '../../blocs/student_bloc/student_event.dart';
 import 'add_education_info_screen.dart';
 import 'add_personal_info_screen.dart';
 
@@ -50,12 +54,16 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
 
   @override
   void initState() {
+    initAddStudent();
     _list = <Widget>[
       KeepAlivePage(
           child: AddPersonalInfoScreen(
         validation: validation,
       )),
-      KeepAlivePage(child: AddEducationInfoScreen(validation: validation,)),
+      KeepAlivePage(
+          child: AddEducationInfoScreen(
+        validation: validation,
+      )),
     ];
     super.initState();
   }
@@ -88,12 +96,16 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: <Widget>[
               ElevatedButton(
-                  onPressed: () {
+                  onPressed: () async {
                     if (_currentScreen == 0) {
-                      if (!validation.validatePersonalInfo.call()) {
+                      if (validation.validatePersonalInfo.call()) {
                         controller.jumpToPage(_currentScreen + 1);
                       }
                     } else if (validation.validateEducationalInfo.call()) {
+                      await Future.microtask(
+                            () => Provider.of<StudentBloc>(context, listen: false)
+                            .add(const AddStudentEvent()),
+                      );
                       Navigator.pop(context);
                     }
                   },

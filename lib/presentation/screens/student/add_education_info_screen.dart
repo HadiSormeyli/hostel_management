@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:hostel_management/utils/constant.dart';
 import 'package:persian_datetime_picker/persian_datetime_picker.dart';
 
 import '../../../config/theme.dart';
@@ -31,11 +32,18 @@ class _AddEducationInfoScreenState extends State<AddEducationInfoScreen> {
   @override
   void initState() {
     widget.validation.validateEducationalInfo = () {
-      return (_studentNumberKey.currentState!.validate() &
+      if (_studentNumberKey.currentState!.validate() &
           _validateDate(
               startDateLabel, "لطفا تاریخ شروع به تحصیل را مشخص کنید.") &
           _validateDate(endDateLabel, "لطفا فراغت از تحصیل را مشخص کنید.") &
-          _enterTermKey.currentState!.validate());
+          _enterTermKey.currentState!.validate()) {
+        addStudent['StudentNumber'] = studentNumberController.value.text;
+        addStudent['EntrySemester'] = enterTermController.value.text;
+        addStudent['StartDateOfStudy'] = startDateLabel;
+        addStudent['DateOfGraduation'] = endDateLabel;
+        return true;
+      }
+      return false;
     };
     super.initState();
   }
@@ -119,7 +127,7 @@ class _AddEducationInfoScreenState extends State<AddEducationInfoScreen> {
                         if (picked != null && picked != selectedDate) {
                           setState(() {
                             startDateLabel =
-                                "${picked.year}/${picked.month}/${picked.day}";
+                                "${picked.year}/${picked.month.toString().padLeft(2, '0')}/${picked.day.toString().padLeft(2, '0')}";
                           });
                         }
                       },
@@ -161,7 +169,7 @@ class _AddEducationInfoScreenState extends State<AddEducationInfoScreen> {
                         if (picked != null && picked != selectedDate) {
                           setState(() {
                             endDateLabel =
-                                "${picked.year}/${picked.month}/${picked.day}";
+                                "${picked.year}/${picked.month.toString().padLeft(2, '0')}/${picked.day.toString().padLeft(2, '0')}";
                           });
                         }
                       },
@@ -190,49 +198,91 @@ class _AddEducationInfoScreenState extends State<AddEducationInfoScreen> {
             Row(
               children: [
                 DropDownWidget(
-                    items: ["کامپیوتر", "انسانی"],
-                    onChanged: () {},
-                    selectedValue: "کامپیوتر",
+                    items: ["مهندسی", "انسانی", "علوم"],
+                    onChanged: (value) {
+                      addStudent['CollegeCode'] =
+                          (["مهندسی", "انسانی", "علوم"].indexOf(value) + 1).toString();
+                    },
+                    selectedValue: "انسانی",
                     label: "دانشکده"),
                 const SizedBox(
                   width: smallDistance,
                 ),
                 DropDownWidget(
-                    items: ["مرد", "زن"],
-                    onChanged: () {},
-                    selectedValue: "مرد",
+                    items: [
+                      "مهندسی صنایع",
+                      "مهندسی مکانیک",
+                      "مهندسی عمران",
+                      "مهندسی برق",
+                      "شیمی محض",
+                      "روانشناسی"
+                    ],
+                    onChanged: (value) {
+                      addStudent['GroupCode'] = ([
+                            "مهندسی صنایع",
+                            "مهندسی مکانیک",
+                            "مهندسی عمران",
+                            "مهندسی برق",
+                            "شیمی محض",
+                            "روانشناسی"
+                          ].indexOf(value) +
+                          1).toString();
+                    },
+                    selectedValue: "مهندسی صنایع",
                     label: "گروه"),
                 const SizedBox(
                   width: smallDistance,
                 ),
                 DropDownWidget(
-                    items: ["معاف", "گذرانده"],
-                    onChanged: () {},
-                    selectedValue: "معاف",
+                    items: ["کارشناسی", "ارشد", "دکترا"],
+                    onChanged: (value) {
+                      addStudent['SectionCode'] = (["کارشناسی", "ارشد", "دکترا"].indexOf(value) + 1).toString();
+                    },
+                    selectedValue: "کارشناسی",
                     label: "مقطع"),
                 const SizedBox(
                   width: smallDistance,
                 ),
                 DropDownWidget(
-                    items: ["کامپیوتر", "انسانی"],
-                    onChanged: () {},
-                    selectedValue: "کامپیوتر",
+                    items: [
+                      "مهندسی صنایع",
+                      "مهندسی مکانیک",
+                      "مهندسی عمران",
+                      "مهندسی برق",
+                      "شیمی محض",
+                      "روانشناسی"
+                    ],
+                    onChanged: (value) {
+                      addStudent['FieldOfStudyCode'] =  ([
+                        "مهندسی صنایع",
+                        "مهندسی مکانیک",
+                        "مهندسی عمران",
+                        "مهندسی برق",
+                        "شیمی محض",
+                        "روانشناسی"
+                      ].indexOf(value) + 1).toString();
+                    },
+                    selectedValue: "مهندسی صنایع",
                     label: "رشته تحصیلی"),
                 const SizedBox(
                   width: smallDistance,
                 ),
                 DropDownWidget(
-                    items: ["مرد", "زن"],
-                    onChanged: () {},
-                    selectedValue: "مرد",
+                    items: ["ندارد", "سیالات", "جامدات", "برق قدرت"],
+                    onChanged: (value) {
+                      addStudent['OrientationCode'] =  (["ندارد", "سیالات", "جامدات", "برق قدرت"].indexOf(value) + 1).toString();
+                    },
+                    selectedValue: "ندارد",
                     label: "گرایش"),
                 const SizedBox(
                   width: smallDistance,
                 ),
                 DropDownWidget(
-                    items: ["معاف", "گذرانده"],
-                    onChanged: () {},
-                    selectedValue: "معاف",
+                    items: ["روزانه", "شبانه"],
+                    onChanged: (value) {
+                      addStudent['AcceptanceTypeCode'] =  (["روزانه", "شبانه"].indexOf(value) + 1).toString();
+                    },
+                    selectedValue: "روزانه",
                     label: "نوع پذیرش"),
               ],
             ),
@@ -242,10 +292,10 @@ class _AddEducationInfoScreenState extends State<AddEducationInfoScreen> {
             Form(
                 key: _enterTermKey,
                 child: TextFormField(
-                  maxLength: 8,
+                  maxLength: 16,
                   inputFormatters: [
                     FilteringTextInputFormatter.allow(RegExp(
-                        '[1234567890 آابپتثجچحخدذرزژسشصضطظعغفقکگلمنوهی]'))
+                        '[- 1234567890 آابپتثجچحخدذرزژسشصضطظعغفقکگلمنوهی]'))
                   ],
                   controller: enterTermController,
                   maxLines: 1,

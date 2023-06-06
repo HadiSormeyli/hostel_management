@@ -15,6 +15,7 @@ class DropDownWidget extends StatefulWidget {
   final double borderWidth;
   final bool enabled;
   Color backgroundColor;
+  final double width;
 
   @override
   State<DropDownWidget> createState() => _DropDownWidgetState();
@@ -22,6 +23,7 @@ class DropDownWidget extends StatefulWidget {
   DropDownWidget(
       {required this.items,
       required this.onChanged,
+      this.width = 184,
       this.label,
       this.labelType = LabelType.vertical,
       this.selectedValue,
@@ -96,10 +98,11 @@ class _DropDownWidgetState extends State<DropDownWidget> {
           setState(() {
             _selectedValue = value as String;
           });
+          widget.onChanged(value);
         },
         buttonStyleData: ButtonStyleData(
           height: 48,
-          width: 184,
+          width: widget.width,
           padding: const EdgeInsets.only(
               left: mediumDistance, right: mediumDistance),
           decoration: BoxDecoration(
@@ -118,8 +121,8 @@ class _DropDownWidgetState extends State<DropDownWidget> {
           iconDisabledColor: Colors.grey,
         ),
         dropdownStyleData: DropdownStyleData(
-          maxHeight: 200,
-          width: 200,
+          maxHeight: widget.width,
+          width: (widget.width == double.infinity) ? 184 : widget.width,
           padding: null,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(mediumRadius),
